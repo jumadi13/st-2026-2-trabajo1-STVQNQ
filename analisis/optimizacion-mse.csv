@@ -1,0 +1,40 @@
+"serie","metodo","parametros","MSE_entrenamiento"
+1,"Media simple","fijo",3596.307564007
+1,"Ingenuo","fijo",10.3447899159664
+1,"Ingenuo estacional","fijo",456.304722222222
+1,"Media móvil","k 2",12.874279661017
+1,"SES","alpha 0.98",10.3463654340821
+1,"Doble media móvil","k 6",6.08053989409895
+1,"Tendencia lineal","fijo",80.6280199187049
+1,"Tendencia cuadrática","fijo",13.4345035814261
+1,"Tendencia exponencial","fijo",65.1101874203208
+1,"Tendencia estacional","fijo",99.5019666377032
+1,"Holt","alpha 0.55;beta 0.25",6.94643875397581
+1,"HW aditivo","s 12;alpha 0.3;beta 0.1;gamma 0.8",11.9016331285485
+1,"HW multiplicativo","s 12;alpha 0.3;beta 0.1;gamma 0.8",12.1062103792412
+2,"Media simple","fijo",1649.31079001353
+2,"Ingenuo","fijo",1066.09233069307
+2,"Ingenuo estacional","fijo",49.3730510204082
+2,"Media móvil","k 4",347.129961670918
+2,"SES","alpha 0.2",438.657294001717
+2,"Doble media móvil","k 4",357.583497861842
+2,"Tendencia lineal","fijo",364.8738974216
+2,"Tendencia cuadrática","fijo",434.374687411962
+2,"Tendencia exponencial","fijo",416.951978533525
+2,"Tendencia estacional","fijo",50.3100058529374
+2,"Holt","alpha 0.1;beta 0.8",429.957441318966
+2,"HW aditivo","s 4;alpha 0.1;beta 0.1;gamma 0.5",22.1647315769906
+2,"HW multiplicativo","s 4;alpha 0.1;beta 0.1;gamma 0.2",19.0037114673553
+3,"Media simple","fijo",41.0045217699894
+3,"Ingenuo","fijo",120.133858267717
+3,"Ingenuo estacional","fijo",71.0082644628099
+3,"Media móvil","k 11",43.576393303666
+3,"SES","alpha 0.02",40.8696135365552
+3,"Doble media móvil","k 11",48.6528133834891
+3,"Tendencia lineal","fijo",47.0802175231792
+3,"Tendencia cuadrática","fijo",58.8589539839412
+3,"Tendencia exponencial","fijo",47.552223662807
+3,"Tendencia estacional","fijo",48.6443306339161
+3,"Holt","alpha 0.3;beta 0.45",71.2842369317968
+3,"HW aditivo","s 7;alpha 0.1;beta 0.1;gamma 0.2",51.3764391601531
+3,"HW multiplicativo","s 7;alpha 0.1;beta 0.1;gamma 0.2",51.5683435487018
