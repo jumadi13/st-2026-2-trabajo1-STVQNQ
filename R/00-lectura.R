@@ -5,9 +5,8 @@ leer_serie <- function(ruta, frecuencia = c("mensual", "trimestral", "diaria")) 
   x$fecha <- as.Date(x$fecha)
   if (anyNA(x$fecha) || any(!is.finite(x$valor))) stop("Fechas o valores inválidos")
   if (is.unsorted(x$fecha, strictly = TRUE)) stop("Las fechas deben estar ordenadas y ser únicas")
-  paso <- switch(frecuencia, diaria = 1, mensual = 30.4375, trimestral = 91.3125)
-  if (frecuencia == "diaria" && any(diff(as.numeric(x$fecha)) != 1)) stop("Hay huecos en las fechas")
-  if (frecuencia == "mensual" && (any(format(x$fecha, "%d") != "01") || any(diff(as.integer(format(x$fecha, "%Y"))*12 + as.integer(format(x$fecha, "%m"))) != 1))) stop("Secuencia mensual irregular")
-  if (frecuencia == "trimestral" && (any(format(x$fecha, "%m-%d") != "01-01" & format(x$fecha, "%m-%d") != "04-01" & format(x$fecha, "%m-%d") != "07-01" & format(x$fecha, "%m-%d") != "10-01") || any(diff(as.integer(format(x$fecha, "%Y"))*4 + (as.integer(format(x$fecha, "%m"))-1)%/%3) != 1))) stop("Secuencia trimestral irregular")
+  if (frecuencia == "diaria" && any(as.numeric(x$fecha[-1]) - as.numeric(x$fecha[-nrow(x)]) != 1)) stop("Hay huecos en las fechas")
+  if (frecuencia == "mensual" && (any(format(x$fecha, "%d") != "01") || any((as.integer(format(x$fecha[-1], "%Y"))*12 + as.integer(format(x$fecha[-1], "%m"))) - (as.integer(format(x$fecha[-nrow(x)], "%Y"))*12 + as.integer(format(x$fecha[-nrow(x)], "%m"))) != 1))) stop("Secuencia mensual irregular")
+  if (frecuencia == "trimestral" && (any(format(x$fecha, "%m-%d") != "01-01" & format(x$fecha, "%m-%d") != "04-01" & format(x$fecha, "%m-%d") != "07-01" & format(x$fecha, "%m-%d") != "10-01") || any((as.integer(format(x$fecha[-1], "%Y"))*4 + (as.integer(format(x$fecha[-1], "%m"))-1)%/%3) - (as.integer(format(x$fecha[-nrow(x)], "%Y"))*4 + (as.integer(format(x$fecha[-nrow(x)], "%m"))-1)%/%3) != 1))) stop("Secuencia trimestral irregular")
   x
 }
