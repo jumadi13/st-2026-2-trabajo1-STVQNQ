@@ -160,6 +160,68 @@ for (i in seq_along(resultados)) {
   plot(seq_along(e),e,type="b",xlab="Origen móvil",ylab="Error",main=paste("Errores a un paso —",z$ganador_h1)); abline(h=0,lty=2)
   plot(0:m,re,type="h",xlab="Rezago",ylab="ACF de errores",main="Correlograma de errores"); abline(h=c(-1.96,1.96)/sqrt(length(e)),lty=2); dev.off(); par(mfrow=c(1,1))
 }
+# Regenerar también todas las tablas derivadas consumidas por el informe.
+filas_desc <- list(); filas_trans <- list(); filas_raices <- list(); filas_dep <- list(); filas_bloques <- list(); filas_est <- list()
+for (i in 1:3) {
+  z <- resultados[[i]]
+  cfg <- config[[i]]
+  x <- z$datos; y <- x$valor; T <- length(y); s <- z$s; n0 <- z$n0
+  filas_desc[[i]] <- data.frame(serie=i,nombre=cfg$nombre,unidad=cfg$unidad,frecuencia=cfg$freq,
+    inicio=min(x$fecha),fin=max(x$fecha),T=T,media=mean(y),desv_est=sd(y),varianza=var(y),
+    minimo=min(y),maximo=max(y),mediana=median(y),n0=n0,fecha_fin_entrenamiento=x$fecha[n0],
+    fecha_inicio_prueba=x$fecha[n0+1],H=z$H,m=z$m,origenes_h1=T-n0,origenes_H=T-z$H-n0+1,
+    acf1=acf_muestral(y, min(1,T-1))[2],acf4=acf_muestral(y,min(4,T-1))[5],
+    acf7=acf_muestral(y,min(7,T-1))[8],acf12=acf_muestral(y,min(12,T-1))[13])
+  cand <- list("Original"=y,"Diferencia regular"=diferenciar(y,1,0,s),
+    "Diferencia estacional"=diferenciar(y,0,1,s),"Combinada"=diferenciar(y,1,1,s),
+    "Log + diferencia regular"=diff(log(y)),
+    "Log + diferencia estacional"=diff(log(y),lag=s),
+    "Log + combinada"=diferenciar(log(y),1,1,s))
+  polys <- list("Original"=1,"Diferencia regular"=c(1,-1),
+    "Diferencia estacional"=c(1,rep(0,s-1),-1),"Combinada"=c(1,-1,rep(0,s-2),-1,1),
+    "Log + diferencia regular"=c(1,-1),"Log + diferencia estacional"=c(1,rep(0,s-1),-1),
+    "Log + combinada"=c(1,-1,rep(0,s-2),-1,1))
+  for (nmtr in names(cand)) {
+    v <- cand[[nmtr]]; filas_trans[[length(filas_trans)+1]] <- data.frame(serie=i,candidata=nmtr,
+      polinomio=paste(polys[[nmtr]],collapse=" "),n=length(v),media=mean(v),varianza=var(v),r1=acf_muestral(v,1)[2])
+    if (nmtr!="Original") {
+      rr <- polyroot(polys[[nmtr]])
+      for (r0 in rr) filas_raices[[length(filas_raices)+1]] <- data.frame(serie=i,candidata=nmtr,
+        coeficientes=paste(polys[[nmtr]],collapse=";"),raiz=as.character(r0),real=Re(r0),imaginaria=Im(r0),modulo=Mod(r0))
+    }
+  }
+  zd <- if (i==1) diferenciar(y,1,0,s) else if (i==2) diff(log(y),lag=s) else y
+  nzd <- length(zd); mm <- min(floor(nzd/4),24); lj <- ljung_box(zd,mm); L <- floor(4*(nzd/100)^(2/9)); lrv <- varianza_largo_plazo(zd,L)
+  se0 <- sd(zd)/sqrt(nzd); selp <- sqrt(lrv/nzd)
+  filas_dep[[i]] <- data.frame(serie=i,n=nzd,media=mean(zd),varianza=var(zd),r1=acf_muestral(zd,1)[2],m=mm,L=L,
+    LB_Q=lj$Q,LB_gl=lj$gl,LB_p=lj$p,LRV_Bartlett=lrv,SE_ingenuo=se0,
+    IC_ingenuo_inf=mean(zd)-1.96*se0,IC_ingenuo_sup=mean(zd)+1.96*se0,
+    SE_largo_plazo=selp,IC_LP_inf=mean(zd)-1.96*selp,IC_LP_sup=mean(zd)+1.96*selp,
+    ACF_lag2=acf_muestral(zd,min(2,nzd-1))[3],PACF_lag1=pacf_dl(acf_muestral(zd,1))[1])
+  nb <- 4; cuts <- split(seq_along(zd), cut(seq_along(zd),breaks=nb,labels=FALSE))
+  for (b in seq_along(cuts)) { v <- zd[cuts[[b]]]; filas_bloques[[length(filas_bloques)+1]] <- data.frame(serie=i,transformacion=if(i==1)"Diferencia regular" else if(i==2)"Log + diferencia estacional" else "Original",bloque=b,n=length(v),media=mean(v),varianza=var(v)) }
+  temporada <- (seq_len(T)-1) %% s + 1; amp <- tapply(y,temporada,mean); fitlin <- lm(y~seq_len(T)); an <- anova(lm(resid(fitlin)~factor(temporada)))
+  filas_est[[i]] <- data.frame(serie=i,periodo_candidato=s,acf_rezago_s=acf_muestral(y,s)[s+1],
+    media_estacional_min=min(amp),media_estacional_max=max(amp),amplitud_medias=max(amp)-min(amp),
+    F_anova_sobre_residuo_lineal=an$`F value`[1],p_valor=an$`Pr(>F)`[1])
+  # Curvas MSE: un gráfico por serie; métodos fijos se separan de los ajustables.
+  cv <- do.call(rbind,filas_curva); cv <- cv[cv$serie==i & is.finite(cv$MSE),,drop=FALSE]
+  png(sprintf("figs/s%d_curvas_MSE.png",i),width=1200,height=750,res=130)
+  par(mar=c(9,5,3,1)); if(nrow(cv)) {
+    cv$etiqueta <- paste(cv$metodo,cv$parametros,sep="\n")
+    cv <- cv[order(cv$MSE),]; cv <- head(cv, min(35,nrow(cv)))
+    barplot(cv$MSE,names.arg=cv$metodo,las=2,cex.names=.58,
+      ylab="MSE de un paso (entrenamiento)",main=paste("Serie",i,"— mejores configuraciones por MSE"),col="steelblue")
+  } else { plot.new(); title(main=paste("Serie",i,"— curvas MSE")); text(.5,.5,"No hay valores MSE finitos") }
+  dev.off()
+}
+write.csv(do.call(rbind,filas_desc),"analisis/resumen-descriptivo.csv",row.names=FALSE)
+write.csv(do.call(rbind,filas_trans),"analisis/transformaciones-candidatas.csv",row.names=FALSE)
+write.csv(do.call(rbind,filas_raices),"analisis/raices-operadores.csv",row.names=FALSE)
+write.csv(do.call(rbind,filas_dep),"analisis/dependencia-transformada.csv",row.names=FALSE)
+write.csv(do.call(rbind,filas_bloques),"analisis/bloques-estacionariedad.csv",row.names=FALSE)
+write.csv(do.call(rbind,filas_est),"analisis/evidencia-estacionalidad.csv",row.names=FALSE)
+
 saveRDS(resultados,"analisis/resultados.rds")
 writeLines(capture.output(sessionInfo()),"sesion-info.txt")
 # Mantener los entregables sincronizados con los CSV/RDS recién generados.
