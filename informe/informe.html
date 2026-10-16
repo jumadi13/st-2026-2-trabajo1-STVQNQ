@@ -2259,10 +2259,11 @@ vertical-align: -.125em;
 </header>
 
 
+<p>Link del repositorio: https://github.com/jumadi13/st-2026-2-trabajo1-STVQNQ</p>
 <section id="alcance-y-procedencia" class="level1" data-number="1">
 <h1 data-number="1"><span class="header-section-number">1</span> Alcance y procedencia</h1>
-<p>Este informe analiza los tres CSV asignados al equipo STVQNQ. El enunciado aclara que las series son simuladas y que las organizaciones y cifras de contexto son ficticias. Los archivos originales se conservan sin alterar, eliminar ni imputar observaciones. El horizonte final de decisión es de seis meses para la cartera, cuatro trimestres para las primas y siete días para los rechazos.</p>
-<p>El flujo <code>source(&quot;analisis/correr-todo.R&quot;)</code> debe ejecutarse desde la raíz antes de renderizar. Las tablas de pronóstico se calculan con parámetros escogidos exclusivamente en el primer 80 % y evaluación por orígenes móviles. La banda de pronóstico se declara heurística. La preparación de este archivo no reemplaza la revisión del código ni la ejecución limpia de R/Quarto.</p>
+<p>Este informe analiza los tres CSV asignados al equipo STVQNQ. Los archivos originales se conservan sin alterar, eliminar ni imputar observaciones. El horizonte final de decisión es de seis meses para la cartera, cuatro trimestres para las primas y siete días para los rechazos.</p>
+<p>El flujo <code>source(&quot;analisis/correr-todo.R&quot;)</code> debe ejecutarse desde la raíz antes de renderizar. Las tablas de pronóstico se calculan con parámetros escogidos exclusivamente en el primer 80 % y evaluación por orígenes móviles. La banda de pronóstico se declara heurística.</p>
 </section>
 <section id="las-tres-series-y-la-pregunta-de-pronóstico" class="level1" data-number="2">
 <h1 data-number="2"><span class="header-section-number">2</span> Las tres series y la pregunta de pronóstico</h1>
@@ -2676,7 +2677,7 @@ Horizonte h = 7
 <p>El archivo <code>R/05-evaluacion.R</code> implementa MCO manual, error estándar ordinario, covarianza robusta tipo Bartlett, Jarque–Bera y Durbin–Watson. La función de MCO se contrasta con la regresión base en un bloque de verificación. Las tablas incluyen los cuatro diseños deterministas pedidos por serie; las cifras actuales son una referencia calculada independientemente y deben comprobarse al ejecutar R.</p>
 <section id="pruebas-de-coeficientes-y-diagnósticos-de-residuos" class="level3" data-number="6.3.1">
 <h3 data-number="6.3.1" class="anchored" data-anchor-id="pruebas-de-coeficientes-y-diagnósticos-de-residuos"><span class="header-section-number">6.3.1</span> Pruebas de coeficientes y diagnósticos de residuos</h3>
-<p>Para cada coeficiente de tendencia, la hipótesis es (H_0:_j=0) frente a (H_1:j<em>). El estadístico es (t=j/SE</em>{HAC}(j)), con aproximación (t*{n-p}); al 5 %, se rechaza si (|t|&gt;t{0,975;n-p}). La tabla informa estimación, error estándar ordinario, error robusto, t, p y decisión; la lectura depende del signo, la unidad y el modelo.</p>
+<p>Para cada coeficiente de tendencia, la hipótesis es (H_0:_j=0) frente a (H_1:j). El estadístico es (t=j/SE{HAC}(j)), con aproximación (t*{n-p}); al 5 %, se rechaza si (|t|&gt;t{0,975;n-p}). La tabla informa estimación, error estándar ordinario, error robusto, t, p y decisión; la lectura depende del signo, la unidad y el modelo.</p>
 <p>Para los residuos, Ljung–Box contrasta (H_0:r_1==r_m=0) frente a la alternativa de alguna autocorrelación no nula, con (Q) aproximadamente (^2_m); para m = 24, el valor crítico al 5 % es (^2_{24;0,95}=36,415). Jarque–Bera contrasta simetría y curtosis normales mediante (JB=n(S<sup>2/6+(K-3)</sup>2/24)), aproximadamente (^2_2), con crítico 5,991. Durbin–Watson se usa como diagnóstico y se lee con (d(1-r_1)), no como sustituto de la ACF.</p>
 <div class="cell">
 <div class="cell-output cell-output-stdout">

@@ -1,0 +1,213 @@
+---
+title: "Trabajo 1: descripción, operador de rezago, dependencia y pronóstico"
+subtitle: "Equipo STVQNQ · Series de Tiempo · UNAL Medellín · 2026-II"
+author: "Juan Manuel Diaz Larrea · Sofia Valentina Lopez Ramirez"
+lang: es
+format:
+  revealjs:
+    theme: simple
+    slide-number: true
+    transition: fade
+    center: false
+    width: 1280
+    height: 720
+    margin: 0.08
+execute:
+  echo: false
+  warning: false
+  message: false
+---
+
+## Pregunta de trabajo y decisiones
+
+El equipo analiza tres series simuladas del Grupo Financiero Altamar y compara métodos para pronosticar cada una.
+
+- **Cartera de crédito:** apoyar la decisión de fondeo para los próximos 6 meses.
+- **Primas emitidas:** orientar metas y reservas para los próximos 4 trimestres.
+- **Transacciones rechazadas:** apoyar la programación de turnos para los próximos 7 días.
+
+La meta no es elegir un único método para todas las series: es justificar cada decisión con patrones, diagnósticos y evaluación fuera de muestra.
+
+## Datos y diseño de evaluación
+
+| Serie | Frecuencia | Periodo | \(T\) | Horizonte \(H\) |
+|---|---|---|---:|---:|
+| Cartera de crédito | Mensual | jul. 2013 – dic. 2025 | 150 | 6 meses |
+| Primas emitidas | Trimestral | ene. 1994 – oct. 2025 | 128 | 4 trimestres |
+| Transacciones rechazadas | Diaria | 5 may. – 11 oct. 2025 | 160 | 7 días |
+
+- Se conserva la información de los CSV originales sin eliminar ni imputar observaciones.
+- Entrenamiento: primeras \(\lfloor0{,}8T\rfloor\) observaciones.
+- Evaluación por orígenes móviles con parámetros fijados en entrenamiento.
+- Se comparan \(h=1\) y \(h=H\), con RMSE, MAD y MAPE.
+
+## Serie 1 · Cartera de crédito
+
+**Ficha descriptiva**
+
+- \(T=150\); media: **1.114,932 millones COP**
+- Desviación estándar: **82,789**
+- Mínimo–máximo: **998,7–1.277,6**
+- \(r_1\) original: **0,9995**
+- Entrenamiento: 120 observaciones; prueba: 30
+
+**Lectura:** predomina una tendencia creciente y no hay evidencia convincente de estacionalidad anual. La decisión es cuánto fondear para seis meses, por lo que el desempeño a \(h=6\) es el criterio operativo principal.
+
+## Serie 2 · Primas emitidas
+
+**Ficha descriptiva**
+
+- \(T=128\); media: **127,492 miles de millones**
+- Desviación estándar: **49,971**
+- Mínimo–máximo: **43,17–272,89**
+- \(r_1\) original: **0,7033**
+- Entrenamiento: 102; prueba: 26
+
+**Lectura:** hay tendencia y patrón trimestral marcado. Para metas y reservas importa reproducir el ciclo anual, no solo extrapolar la tendencia.
+
+## Serie 3 · Transacciones rechazadas
+
+**Ficha descriptiva**
+
+- \(T=160\); media: **79,844 transacciones/día**
+- Desviación estándar: **6,210**
+- Mínimo–máximo: **67–99**
+- \(r_1\) original: **−0,489**
+- Entrenamiento: 128; prueba: 32
+
+**Precaución operativa:** el último dato es del sábado 11 de octubre de 2025 y los turnos se programan los domingos; existe un desfase de un día. No se observa evidencia suficiente para justificar una estacionalidad semanal.
+
+## Operador de rezago: candidatas y selección
+
+Se compararon \(Y_t\), \((1-B)Y_t\), \((1-B^s)Y_t\) y \((1-B)(1-B^s)Y_t\). La elección se apoyó en patrón gráfico, medias/varianzas por bloques, autocorrelación y riesgo de sobrediferenciación.
+
+| Serie | Transformación priorizada | Justificación |
+|---|---|---|
+| Cartera | Diferencia regular \((1-B)Y_t\) | Reduce tendencia; la segunda diferencia aumenta la varianza y vuelve más negativa la ACF inicial. |
+| Primas | Logaritmo y diferencia estacional \((1-B^4)\log(Y_t)\) | Estacionalidad trimestral multiplicativa; la diferencia regular adicional induce fuerte autocorrelación negativa. |
+| Rechazos | Serie original | Medias y varianzas por bloques relativamente estables; diferenciar eleva la varianza sin beneficio claro. |
+
+## Raíces e interpretación
+
+- **Cartera:** el polinomio \(1-B\) tiene raíz \(B=1\). La primera diferencia elimina el componente de tendencia de primer orden, aunque queda dependencia residual.
+- **Primas:** \(1-B^4\) tiene raíces \(1,-1,i,-i\), todas de módulo uno. Representa la raíz de nivel y las raíces asociadas al ciclo estacional trimestral.
+- **Rechazos:** se conserva la serie en niveles; no se justifica introducir raíces unitarias por diferencia sin evidencia suficiente.
+
+La transformación es una decisión sustentada por los diagnósticos, no una prueba aislada de estacionariedad perfecta.
+
+## Dependencia y estacionariedad
+
+El Ljung–Box en las series originales, con 24 rezagos, rechaza ruido blanco en los tres casos:
+
+| Serie | \(Q\) | gl | p-valor |
+|---|---:|---:|---:|
+| Cartera | 2291,443 | 24 | < 0,001 |
+| Primas | 1201,1 | 24 | < 0,001 |
+| Rechazos | 85,719 | 24 | \(7{,}28\times10^{-9}\) |
+
+En las transformaciones priorizadas también permanece dependencia: cartera, \(p=0{,}0226\); primas, \(p=3{,}51\times10^{-6}\). En rechazos, el primer rezago negativo indica alternancia de corto plazo. Estos resultados exigen cautela al interpretar independencia; no invalidan por sí solos la evaluación predictiva.
+
+## Pronóstico: protocolo de comparación
+
+Se compararon métodos de referencia y métodos con tendencia/estacionalidad, incluidos Holt, Holt–Winters y modelos de tendencia cuando correspondía.
+
+- Los parámetros se escogen solo en el 80 % inicial.
+- Todos los métodos de una serie se evalúan sobre los mismos orígenes.
+- \(h=1\) mide la predicción inmediata; \(h=H\) se alinea con la decisión real.
+- RMSE es el criterio principal de ordenación; MAD y MAPE complementan la lectura.
+- Se conserva en las tablas el referente ingenuo aunque no sea el ganador.
+
+## Resultados de origen móvil
+
+| Serie | Horizonte | Ganador | RMSE ganador | Referente | RMSE referente |
+|---|---|---|---:|---|---:|
+| Cartera | 1 mes | Holt | **2,312** | Ingenuo | 3,476 |
+| Cartera | 6 meses | Tendencia cuadrática | **3,796** | Ingenuo | 15,856 |
+| Primas | 1 trimestre | Holt–Winters multiplicativo | **7,501** | Ingenuo estacional | 10,189 |
+| Primas | 4 trimestres | Holt–Winters multiplicativo | **7,374** | Ingenuo estacional | 10,715 |
+| Rechazos | 1 día | Media simple | **5,955** | Ingenuo | 9,574 |
+| Rechazos | 7 días | Media simple | **5,843** | Ingenuo | 9,632 |
+
+**Resultado clave:** el ganador cambia según la dinámica de cada serie y el horizonte de la decisión.
+
+## Validación de errores de los ganadores a un paso
+
+| Serie / ganador | n errores | Media error | p de prueba t | p Ljung–Box | p Jarque–Bera | DW |
+|---|---:|---:|---:|---:|---:|---:|
+| Cartera · Holt | 30 | 0,029 | 0,947 | 0,315 | 0,572 | 1,916 |
+| Primas · HW multiplicativo | 26 | 0,495 | 0,744 | 0,855 | 0,334 | 1,885 |
+| Rechazos · Media simple | 32 | −0,370 | 0,731 | 0,421 | 0,825 | 2,453 |
+
+No se detecta evidencia significativa de media de error distinta de cero ni de autocorrelación residual conjunta en estas pruebas. Los valores de Jarque–Bera tampoco rechazan normalidad al 5 %. DW es un diagnóstico complementario; en rechazos, \(DW>2\) concuerda con autocorrelación negativa.
+
+## Pronóstico final: cartera
+
+El método para la decisión a seis meses es **tendencia cuadrática**, reajustado sobre la serie completa. Pronósticos puntuales reportados (millones de COP):
+
+| Mes | Pronóstico (millones COP) |
+|---|---:|
+| Enero 2026 | 1.282,0 |
+| Febrero 2026 | 1.284,9 |
+| Marzo 2026 | 1.287,7 |
+| Abril 2026 | 1.290,8 |
+| Mayo 2026 | 1.294,9 |
+| Junio 2026 | 1.297,8 |
+
+La banda publicada en el informe es heurística: \(\hat y_{T+h}\pm1{,}96s_h\), con desviación de errores de origen móvil específica por horizonte. Debe leerse como referencia de incertidumbre, no como intervalo de cobertura garantizada.
+
+## Pronóstico final: primas
+
+El método seleccionado para cuatro trimestres es **Holt–Winters multiplicativo**, reajustado sobre toda la serie.
+
+| Trimestre de 2026 | Pronóstico (miles de millones) |
+|---|---:|
+| T1 | 174,6 |
+| T2 | 207,4 |
+| T3 | 186,6 |
+| T4 | 263,8 |
+
+El patrón trimestral multiplicativo aporta información que una tendencia lineal no recoge. La proyección apoya la planeación de metas y reservas; no debe tratarse como garantía de primas futuras.
+
+## Pronóstico final: rechazos
+
+La **media simple** gana tanto a un día como a siete días. El pronóstico puntual es **79,844 rechazos diarios** para cada uno de los siete días; la banda es heurística y cambia con la desviación de errores por horizonte.
+
+| Horizonte | Pronóstico puntual |
+|---|---:|
+| Día 1 | 79,844 |
+| Día 2 | 79,844 |
+| Día 3 | 79,844 |
+| Día 4 | 79,844 |
+| Día 5 | 79,844 |
+| Día 6 | 79,844 |
+| Día 7 | 79,844 |
+
+Aunque la media simple supera al ingenuo en RMSE, no modela explícitamente la autocorrelación negativa de corto plazo.
+
+## Implicaciones para los interesados
+
+**Cooperativa Horizonte**
+- Para fondeo a seis meses, priorizar la tendencia cuadrática: RMSE 3,796 frente a 15,856 del ingenuo en evaluación móvil.
+- Revisar el pronóstico mensualmente si cambia la tendencia o las condiciones de crédito.
+
+**Seguros Altamar**
+- Usar Holt–Winters multiplicativo para planificación trimestral: RMSE 7,374 frente a 10,715 del ingenuo estacional a cuatro trimestres.
+- Revisar metas y reservas con la actualización de cada trimestre.
+
+**Altamar Pagos**
+- La media simple es un punto de partida estable para turnos.
+- Costo del turno: **$380.000 COP**. El supuesto de contexto asocia un turno faltante con \(20\times \$150.000=\$3.000.000\) COP en compras perdidas.
+- Comparar el costo del turno extra con el costo esperado de quedarse corto; ajustar la dotación con información operativa adicional.
+
+## Conclusiones
+
+- **No hay un método universal:** la cartera necesita extrapolar tendencia; las primas, reproducir estacionalidad trimestral multiplicativa; los rechazos, una referencia estable.
+- La cartera mejora especialmente a seis meses con tendencia cuadrática.
+- Holt–Winters multiplicativo supera al ingenuo estacional para las primas a uno y cuatro trimestres.
+- La media simple supera al ingenuo en rechazos, aunque no captura toda la dependencia negativa de corto plazo.
+- La evaluación por orígenes móviles y la validación de errores respaldan las elecciones, pero las bandas de pronóstico siguen siendo heurísticas.
+- Las recomendaciones deben actualizarse cuando cambien los patrones, los costos o el contexto operativo.
+
+```
+
+Antes de entregar, comprobar que el HTML del informe, los CSV, `resultados.rds`, las figuras, la nota ejecutiva y las diapositivas provengan de la misma ejecución. Equipo **STVQNQ** · UNAL Medellín · 2026-II.

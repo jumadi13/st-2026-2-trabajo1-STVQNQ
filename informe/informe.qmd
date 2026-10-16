@@ -13,12 +13,13 @@ execute:
   echo: false
   warning: false
 ---
+Link del repositorio: https://github.com/jumadi13/st-2026-2-trabajo1-STVQNQ
 
 # Alcance y procedencia
 
-Este informe analiza los tres CSV asignados al equipo STVQNQ. El enunciado aclara que las series son simuladas y que las organizaciones y cifras de contexto son ficticias. Los archivos originales se conservan sin alterar, eliminar ni imputar observaciones. El horizonte final de decisión es de seis meses para la cartera, cuatro trimestres para las primas y siete días para los rechazos.
+Este informe analiza los tres CSV asignados al equipo STVQNQ. Los archivos originales se conservan sin alterar, eliminar ni imputar observaciones. El horizonte final de decisión es de seis meses para la cartera, cuatro trimestres para las primas y siete días para los rechazos.
 
-El flujo `source("analisis/correr-todo.R")` debe ejecutarse desde la raíz antes de renderizar. Las tablas de pronóstico se calculan con parámetros escogidos exclusivamente en el primer 80 % y evaluación por orígenes móviles. La banda de pronóstico se declara heurística. La preparación de este archivo no reemplaza la revisión del código ni la ejecución limpia de R/Quarto.
+El flujo `source("analisis/correr-todo.R")` debe ejecutarse desde la raíz antes de renderizar. Las tablas de pronóstico se calculan con parámetros escogidos exclusivamente en el primer 80 % y evaluación por orígenes móviles. La banda de pronóstico se declara heurística.
 
 ```{r}
 config <- list(
@@ -41,9 +42,9 @@ bestrow <- function(i,h) { z <- subset(eval,serie==i & horizonte==h); z[which.mi
 refrow <- function(i,h,met) { z <- subset(eval,serie==i & horizonte==h & metodo==met); z[1,] }
 ```
 
-#  Las tres series y la pregunta de pronóstico
+# Las tres series y la pregunta de pronóstico
 
-##  Fichas y partición
+## Fichas y partición
 
 ```{r}
 particion <- do.call(rbind,lapply(1:3,function(i) {
@@ -137,7 +138,7 @@ Las figuras muestran ACF y PACF de la transformación elegida. La banda puntual 
 
 ## Ljung–Box: prueba conjunta de ausencia de autocorrelación
 
-En cada serie, (H_0:r_1=\cdots=r\_{24}=0) frente a (H_1:) al menos una de esas autocorrelaciones es distinta de cero. El estadístico es (Q=n(n+2)\sum*{k=1}^{24}r_k^2/(n-k)), que bajo la nula se aproxima a una (*\chi\^2{24}). Al 5 %, la región de rechazo es (Q\>36,415). La tabla entrega el estadístico y el valor p; se rechaza la nula en las tres series, lo que indica dependencia remanente y no ruido blanco.
+En cada serie, (H_0:r_1=\cdots=r\_{24}=0) frente a (H_1:) al menos una de esas autocorrelaciones es distinta de cero. El estadístico es (Q=n(n+2)\sum*{k=1}^{24}r_k^2/(n-k)), que bajo la nula se aproxima a una (\*\chi\^2{24}). Al 5 %, la región de rechazo es (Q\>36,415). La tabla entrega el estadístico y el valor p; se rechaza la nula en las tres series, lo que indica dependencia remanente y no ruido blanco.
 
 ```{r}
 dep <- read.csv("../analisis/dependencia-transformada.csv")
@@ -193,7 +194,7 @@ El archivo `R/05-evaluacion.R` implementa MCO manual, error estándar ordinario,
 
 ### Pruebas de coeficientes y diagnósticos de residuos
 
-Para cada coeficiente de tendencia, la hipótesis es (H_0:\beta\_j=0) frente a (H_1:\beta*j*\ne0). El estadístico es (t=\widehat\beta*j/SE*{HAC}(\widehat\beta*j)), con aproximación (t*{n-p}); al 5 %, se rechaza si (\|t\|\>t{0,975;n-p}). La tabla informa estimación, error estándar ordinario, error robusto, t, p y decisión; la lectura depende del signo, la unidad y el modelo.
+Para cada coeficiente de tendencia, la hipótesis es (H_0:\beta\_j=0) frente a (H_1:\beta*j\ne0). El estadístico es (t=\widehat\beta*j/SE{HAC}(\widehat\beta*j)), con aproximación (t\*{n-p}); al 5 %, se rechaza si (\|t\|\>t{0,975;n-p}). La tabla informa estimación, error estándar ordinario, error robusto, t, p y decisión; la lectura depende del signo, la unidad y el modelo.
 
 Para los residuos, Ljung–Box contrasta (H_0:r_1=\cdots=r_m=0) frente a la alternativa de alguna autocorrelación no nula, con (Q) aproximadamente (\chi\^2_m); para m = 24, el valor crítico al 5 % es (\chi\^2\_{24;0,95}=36,415). Jarque–Bera contrasta simetría y curtosis normales mediante (JB=n(S^2/6+(K-3)^2/24)), aproximadamente (\chi\^2_2), con crítico 5,991. Durbin–Watson se usa como diagnóstico y se lee con (d\approx2(1-r_1)), no como sustituto de la ACF.
 
